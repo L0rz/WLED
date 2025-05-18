@@ -248,12 +248,16 @@ void handleSettingsSet(AsyncWebServerRequest *request, byte subPage)
     }
 
     fadeTransition = request->hasArg(F("TF"));
+    t = request->arg(F("TUD")).toInt();
+
+
     modeBlending = request->hasArg(F("EB"));
     t = request->arg(F("TD")).toInt();
     if (t >= 0) transitionDelayDefault = t;
     strip.paletteFade = request->hasArg(F("PF"));
     t = request->arg(F("TP")).toInt();
     randomPaletteChangeTime = MIN(255,MAX(1,t));
+
 
     nightlightTargetBri = request->arg(F("TB")).toInt();
     t = request->arg(F("TL")).toInt();

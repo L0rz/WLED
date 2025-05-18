@@ -119,8 +119,13 @@ class MyExampleUsermod : public Usermod {
       if (!enabled || strip.isUpdating()) return;
 
       // do your magic here
-      if (millis() - lastTime > 1000) {
+      //if (millis() - lastTime > 1000) {
         //Serial.println("I'm alive!");
+       // lastTime = millis();
+      //}
+      if (millis() - lastTime > 500) {
+        bool on = (strip.getPixelColor(0) == 0);
+        strip.setPixelColor(0, on ? RGBW32(255, 0, 0, 0) : RGBW32(0, 0, 0, 0));
         lastTime = millis();
       }
     }

@@ -1,4 +1,5 @@
 #include "wled.h"
+
 /*
  * Register your v2 usermods here!
  *   (for v1 usermods using just usermod.cpp, you can ignore this file)
@@ -9,7 +10,9 @@
  * || || ||
  * \/ \/ \/
  */
-//#include "../usermods/EXAMPLE_v2/usermod_v2_example.h"
+#include "../usermods/EXAMPLE_v2/usermod_v2_example.h"
+#include "../usermods/usermod_highlight/usermod_highlight.h"
+#include "../usermods/usermod_onoffanimation/usermod_sequential_unlock.h"
 
 #ifdef USERMOD_BATTERY
   #include "../usermods/Battery/usermod_v2_Battery.h"
@@ -211,7 +214,11 @@ void registerUsermods()
    * || || ||
    * \/ \/ \/
    */
-  //usermods.add(new MyExampleUsermod());
+  usermods.add(new MyExampleUsermod());
+  usermods.add(&highlightUsermod);
+  usermods.add(new UsermodSequentialUnlock());
+
+
   #ifdef USERMOD_BATTERY
   usermods.add(new UsermodBattery());
   #endif

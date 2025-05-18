@@ -680,6 +680,7 @@ class WS2812FX {  // 96 bytes
   static WS2812FX* instance;
 
   public:
+    void handleSequentialTransition();
 
     WS2812FX() :
       paletteFade(0),

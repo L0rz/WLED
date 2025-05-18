@@ -15,7 +15,6 @@
 WLED::WLED()
 {
 }
-
 // turns all LEDs off and restarts ESP
 void WLED::reset()
 {
