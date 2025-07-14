@@ -226,17 +226,18 @@
 #define FX_MODE_HEARTBEAT              100
 #define FX_MODE_PACIFICA               101
 #define FX_MODE_CANDLE_MULTI           102
-#define FX_MODE_SOLID_GLITTER          103  // candidate for removal (use glitter)
-#define FX_MODE_SUNRISE                104
-#define FX_MODE_PHASED                 105
-#define FX_MODE_TWINKLEUP              106
-#define FX_MODE_NOISEPAL               107
-#define FX_MODE_SINEWAVE               108
-#define FX_MODE_PHASEDNOISE            109
-#define FX_MODE_FLOW                   110
-#define FX_MODE_CHUNCHUN               111
-#define FX_MODE_DANCING_SHADOWS        112
-#define FX_MODE_WASHING_MACHINE        113
+#define FX_MODE_CANDLE_MULTI_SPACED    103
+#define FX_MODE_SOLID_GLITTER          104  // ID erhöht wegen Konflikt
+#define FX_MODE_SUNRISE                105  // ID erhöht
+#define FX_MODE_PHASED                 106  // ID erhöht
+#define FX_MODE_TWINKLEUP              107  // ID erhöht
+#define FX_MODE_NOISEPAL               108  // ID erhöht
+#define FX_MODE_SINEWAVE               109  // ID erhöht
+#define FX_MODE_PHASEDNOISE            110  // ID erhöht
+#define FX_MODE_FLOW                   111  // ID erhöht
+#define FX_MODE_CHUNCHUN               112  // ID erhöht
+#define FX_MODE_DANCING_SHADOWS        113  // ID erhöht
+#define FX_MODE_WASHING_MACHINE        114  // ID erhöht
 // #define FX_MODE_CANDY_CANE             114  // removed in 0.14!
 #define FX_MODE_BLENDS                 115
 #define FX_MODE_TV_SIMULATOR           116
@@ -315,7 +316,7 @@
 #define FX_MODE_ROCKTAVES              185
 #define FX_MODE_2DAKEMI                186
 
-#define MODE_COUNT                     187
+#define MODE_COUNT 189
 
 typedef enum mapping1D2D {
   M12_Pixels = 0,

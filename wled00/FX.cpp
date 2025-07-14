@@ -2707,9 +2707,9 @@ uint16_t mode_tri_static_pattern()
   uint16_t currSegCount = 0;
 
   for (int i = 0; i < SEGLEN; i++) {
-    if ( currSeg % 3 == 0 ) {
+    if (currSeg % 3 == 0) {
       SEGMENT.setPixelColor(i, SEGCOLOR(0));
-    } else if( currSeg % 3 == 1) {
+    } else if(currSeg % 3 == 1) {
       SEGMENT.setPixelColor(i, SEGCOLOR(1));
     } else {
       SEGMENT.setPixelColor(i, (SEGCOLOR(2) > 0 ? SEGCOLOR(2) : WHITE));
@@ -3207,7 +3207,64 @@ uint16_t mode_candle_multi()
 }
 static const char _data_FX_MODE_CANDLE_MULTI[] PROGMEM = "Candle Multi@!,!;!,!;!;;sx=96,ix=224,pal=0";
 
-
+uint16_t mode_candle_multi_spaced() {
+  // Effect-Parameter aus UI
+  uint16_t spacing = SEGMENT.intensity >> 3;  // Abstand zwischen Kerzen (0-31)
+  uint16_t candle_width = (SEGMENT.speed >> 5) + 1; // Breite jeder Kerze (1-8)
+  bool use_second_color = SEGMENT.check1;     // Checkbox: Zweite Farbe verwenden
+  
+  if (spacing == 0) spacing = 1;  // Mindestabstand
+  
+  // Gesamtabstand zwischen Kerzen-Mittelpunkten
+  uint16_t total_spacing = spacing + candle_width;
+  
+  // Anzahl der Kerzen die auf den Strip passen
+  uint16_t num_candles = SEGLEN / total_spacing;
+  if (num_candles == 0) num_candles = 1;
+  
+  // Farben definieren
+  uint32_t primary_color = SEGCOLOR(0);   // Hauptfarbe (Kerzen)
+  uint32_t secondary_color = use_second_color ? SEGCOLOR(1) : 0; // Zweite Farbe oder aus
+  
+  // Strip löschen/füllen mit Hintergrundfarbe - KORRIGIERT
+  SEGMENT.fill(secondary_color);
+  
+  // Kerzen zeichnen
+  for (uint16_t i = 0; i < num_candles; i++) {
+    // Position des Kerzen-Mittelpunkts
+    uint16_t candle_center = (i * total_spacing) + (candle_width / 2);
+    
+    if (candle_center >= SEGLEN) break;
+    
+    // Kerze zeichnen
+    for (int j = -(candle_width/2); j <= (candle_width/2); j++) {
+      int pos = candle_center + j;
+      
+      if (pos >= 0 && pos < SEGLEN) {
+        // Candle-Effekt: Flackern simulieren
+        uint8_t brightness = 150 + random8(105); // 150-255 Helligkeit
+        
+        // Farbe mit Flacker-Helligkeit - KORRIGIERT
+        uint32_t candle_color = color_blend(BLACK, primary_color, brightness);
+        
+        // Zusätzliches Flackern durch leichte Farbvariation
+        uint8_t red = (candle_color >> 16) & 0xFF;
+        uint8_t green = (candle_color >> 8) & 0xFF;
+        uint8_t blue = candle_color & 0xFF;
+        
+        // Leichte Gelbstich für realistisches Kerzenlicht
+        red = qadd8(red, random8(20));
+        green = qadd8(green, random8(10));
+        blue = qsub8(blue, random8(5));
+        
+        // KORRIGIERT: Verwende SEGMENT.setPixelColor
+        SEGMENT.setPixelColor(pos, red, green, blue);
+      }
+    }
+  }
+  
+  return map(SEGMENT.speed, 0, 255, 100, 10); // Geschwindigkeit der Animation anpassen
+}
 /*
 / Fireworks in starburst effect
 / based on the video: https://www.reddit.com/r/arduino/comments/c3sd46/i_made_this_fireworks_effect_for_my_led_strips/
@@ -4642,7 +4699,7 @@ uint16_t mode_wavesins(void) {
 
   return FRAMETIME;
 } // mode_waveins()
-static const char _data_FX_MODE_WAVESINS[] PROGMEM = "Wavesins@!,Brightness variation,Starting color,Range of colors,Color variation;!;!";
+static const char _data_FX_MODE_WAVESINS[] PROGMEM = "Wavesins@Brightness variation,Starting color,Range of colors,Color variation;!;!";
 
 
 //////////////////////////////
@@ -4928,7 +4985,7 @@ uint16_t mode_2Dgameoflife(void) { // Written by Ewoud Wijma, inspired by https:
 
   CRGB backgroundColor = SEGCOLOR(1);
 
-  if (SEGENV.call == 0 || strip.now - SEGMENT.step > 3000) {
+  if (SEGENV.call == 0 || strip.now - SEGENV.step > 3000) {
     SEGENV.step = strip.now;
     SEGENV.aux0 = 0;
     random16_set_seed(millis()>>2); //seed the random generator
@@ -5035,7 +5092,7 @@ uint16_t mode_2DHiphotic() {                        //  By: ldirko  https://edit
 
   return FRAMETIME;
 } // mode_2DHiphotic()
-static const char _data_FX_MODE_2DHIPHOTIC[] PROGMEM = "Hiphotic@X scale,Y scale,,,Speed;!;!;2";
+static const char _data_FX_MODE_2DHIPHOTIC[] PROGMEM = "Hiphotic@X scale,Y scale,,,Speed;!;!;2;ix=24,c1=128,c2=128,c3=16";
 
 
 /////////////////////////
@@ -7318,7 +7375,7 @@ static const char _data_FX_MODE_2DFUNKYPLANK[] PROGMEM = "Funky Plank@Scroll spe
 static uint8_t akemi[] PROGMEM = {
   0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,
-  0,0,0,0,0,0,0,0,0,0,0,2,2,3,3,3,3,3,3,2,2,0,0,0,0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,3,3,3,3,3,3,2,2,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,0,0,2,3,3,0,0,0,0,0,0,3,3,2,0,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,0,2,3,0,0,0,6,5,5,4,0,0,0,3,2,0,0,0,0,0,0,0,0,0,
   0,0,0,0,0,0,0,0,2,3,0,0,6,6,5,5,5,5,4,4,0,0,3,2,0,0,0,0,0,0,0,0,
@@ -7684,6 +7741,9 @@ void WS2812FX::addEffect(uint8_t id, mode_ptr mode_fn, const char *mode_name) {
   }
 }
 
+// Custom effect data for Candle Multi Spaced
+static const char _data_FX_MODE_CANDLE_MULTI_SPACED[] PROGMEM = "Candle Multi Spaced@Spacing,Width,,,Use 2nd Color;!,!,;!";
+
 void WS2812FX::setupEffectData() {
   // Solid must be first! (assuming vector is empty upon call to setup)
   _mode.push_back(&mode_static);
@@ -7798,6 +7858,7 @@ void WS2812FX::setupEffectData() {
   addEffect(FX_MODE_HEARTBEAT, &mode_heartbeat, _data_FX_MODE_HEARTBEAT);
   addEffect(FX_MODE_PACIFICA, &mode_pacifica, _data_FX_MODE_PACIFICA);
   addEffect(FX_MODE_CANDLE_MULTI, &mode_candle_multi, _data_FX_MODE_CANDLE_MULTI);
+  addEffect(FX_MODE_CANDLE_MULTI_SPACED, &mode_candle_multi_spaced, _data_FX_MODE_CANDLE_MULTI_SPACED);
   addEffect(FX_MODE_SOLID_GLITTER, &mode_solid_glitter, _data_FX_MODE_SOLID_GLITTER);
   addEffect(FX_MODE_SUNRISE, &mode_sunrise, _data_FX_MODE_SUNRISE);
   addEffect(FX_MODE_PHASED, &mode_phased, _data_FX_MODE_PHASED);
