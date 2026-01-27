@@ -4,6 +4,9 @@
 const char HttpPullLightControl::_name[]    PROGMEM = "HttpPullLightControl";
 const char HttpPullLightControl::_enabled[] PROGMEM = "Enable";
 
+static HttpPullLightControl http_pull_usermod;
+REGISTER_USERMOD(http_pull_usermod);
+
 void HttpPullLightControl::setup() {
   //Serial.begin(115200);
 
@@ -281,7 +284,6 @@ void HttpPullLightControl::handleResponse(String& responseStr) {
   if (!requestJSONBufferLock(myLockId)) {
     DEBUG_PRINT(F("ERROR: Can not request JSON Buffer Lock, number: "));
       DEBUG_PRINTLN(myLockId);
-      releaseJSONBufferLock(); // Just release in any case, maybe there was already a buffer lock
     return;
   }
 
