@@ -36,6 +36,41 @@ public:
   void setup() override {
     unlockedLeds = 0;
     lastStepTime = millis();
+    // HTTP API:  /sequentialunlock?up=1&down=0&delay=50
+    server.on(F("/sequentialunlock"), HTTP_GET, [this](AsyncWebServerRequest *request){
+      this->handleApiRequest(request);
+    });
+  }
+
+  // All params optional; applies any given setting, persists it and
+  // returns the current configuration as JSON.
+  void handleApiRequest(AsyncWebServerRequest* request) {
+    bool changed = false;
+
+    if (request->hasParam("up")) {
+      enableUnlockUp = request->getParam("up")->value().toInt() != 0;
+      changed = true;
+    }
+    if (request->hasParam("down")) {
+      enableUnlockDown = request->getParam("down")->value().toInt() != 0;
+      changed = true;
+    }
+    if (request->hasParam("delay")) {
+      long val = request->getParam("delay")->value().toInt();
+      if (val >= UNLOCK_DELAY_MIN && val <= UNLOCK_DELAY_MAX) {
+        unlockDelay = (uint16_t)val;
+        changed = true;
+      }
+    }
+
+    if (changed) configNeedsWrite = true; // persisted by main loop (safe outside async ctx)
+
+    char buf[80];
+    snprintf_P(buf, sizeof(buf), PSTR("{\"up\":%s,\"down\":%s,\"delay\":%u}"),
+               enableUnlockUp ? "true" : "false",
+               enableUnlockDown ? "true" : "false",
+               (unsigned)unlockDelay);
+    request->send(200, F("application/json"), buf);
   }
 
   void loop() override {
