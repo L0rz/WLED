@@ -39,41 +39,45 @@ public:
   }
 
   void loop() override {
-    // 🔄 Helligkeit automatisch merken
+    uint16_t len = strip.getLengthTotal();
+
+    // 🔄 Helligkeit automatisch merken (solange Licht an ist)
     static uint8_t lastBri = 0;
     if (bri != lastBri && bri > 1 && !shutdownRequested) {
       savedBri = bri;
       lastBri = bri;
-      Serial.print("savedBri aktualisiert: ");
-      Serial.println(savedBri);
+      DEBUG_PRINT(F("[seqUnlock] savedBri = "));
+      DEBUG_PRINTLN(savedBri);
     }
 
     static bool lastRealOn = false;
     bool realNowOn = (bri > 1);
 
-    // 🟢 Einschalten erkannt
-    if (!lastRealOn && realNowOn && enableUnlockUp && !shutdownRequested) {
+    // 🟢 Einschalten erkannt (nur als saubere Flanke, im Ruhezustand, mit LEDs)
+    if (!lastRealOn && realNowOn && enableUnlockUp && !shutdownRequested
+        && state == UNLOCK_IDLE && !restorePending && len > 0) {
       state = UNLOCK_UP;
       unlockedLeds = 0;
       lastStepTime = millis();
-      Serial.println("Einschaltanimation gestartet");
+      DEBUG_PRINTLN(F("[seqUnlock] Einschaltanimation gestartet"));
     }
 
-    // 🔴 Ausschalten erkannt
-    if (lastRealOn && !realNowOn && enableUnlockDown && !shutdownRequested) {
+    // 🔴 Ausschalten erkannt (nur als saubere Flanke, im Ruhezustand, mit LEDs)
+    if (lastRealOn && !realNowOn && enableUnlockDown && !shutdownRequested
+        && state == UNLOCK_IDLE && !restorePending && len > 0) {
       shutdownRequested = true;
       state = UNLOCK_DOWN;
-      unlockedLeds = strip.getLengthTotal();
+      unlockedLeds = len;
       lastStepTime = millis();
 
       // Transition anpassen
       originalTransition = transitionDelay;
-      transitionDelay = unlockDelay * strip.getLengthTotal() + 300;
-      Serial.print("Transition temporär gesetzt auf: ");
-      Serial.println(transitionDelay);
+      transitionDelay = unlockDelay * len + 300;
+      DEBUG_PRINT(F("[seqUnlock] Transition temporär = "));
+      DEBUG_PRINTLN(transitionDelay);
 
       bri = 1;
-      Serial.println("Ausschaltanimation gestartet");
+      DEBUG_PRINTLN(F("[seqUnlock] Ausschaltanimation gestartet"));
     }
 
     // 💤 Ausschaltanimation abgeschlossen
@@ -82,25 +86,25 @@ public:
       shutdownDoneTime = millis();
     }
     if (shutdownDoneTime > 0 && millis() - shutdownDoneTime > 500) {
-      for (int i = 0; i < strip.getLengthTotal(); i++) {
+      for (uint16_t i = 0; i < len; i++) {
         strip.setPixelColor(i, 0);
       }
       strip.show();
       bri = 0;
 
       transitionDelay = originalTransition;
-      Serial.print("Transition zurückgesetzt auf: ");
-      Serial.println(transitionDelay);
+      DEBUG_PRINT(F("[seqUnlock] Transition zurückgesetzt = "));
+      DEBUG_PRINTLN(transitionDelay);
 
       stateUpdated(CALL_MODE_DIRECT_CHANGE);
       shutdownRequested = false;
       state = UNLOCK_IDLE;
       shutdownDoneTime = 0;
-      Serial.println("Ausschaltanimation abgeschlossen");
+      DEBUG_PRINTLN(F("[seqUnlock] Ausschaltanimation abgeschlossen"));
     }
 
-    // ✨ Einschaltanimation abgeschlossen – Helligkeit & Power wiederherstellen
-    if (state == UNLOCK_UP && unlockedLeds >= strip.getLengthTotal()) {
+    // ✨ Einschaltanimation abgeschlossen – Helligkeit & Power wiederherstellen (einmalig)
+    if (state == UNLOCK_UP && len > 0 && unlockedLeds >= (int)len && !restorePending) {
       if (savedBri < 1) savedBri = 128;
       restorePending = true;
       restoreTime = millis() + 100;
@@ -113,17 +117,19 @@ public:
       colorUpdated(CALL_MODE_DIRECT_CHANGE);
       stateUpdated(CALL_MODE_DIRECT_CHANGE);
       restorePending = false;
-      Serial.print("Helligkeit und Power wiederhergestellt auf: ");
-      Serial.println(savedBri);
+      DEBUG_PRINT(F("[seqUnlock] Helligkeit wiederhergestellt = "));
+      DEBUG_PRINTLN(savedBri);
     }
-    
 
     lastRealOn = realNowOn;
   }
 
   void handleOverlayDraw() override {
+    uint16_t len = strip.getLengthTotal();
+    if (len == 0) return;
+
     if (bri == 0 && state == UNLOCK_IDLE && !shutdownRequested) {
-      for (int i = 0; i < strip.getLengthTotal(); i++) {
+      for (uint16_t i = 0; i < len; i++) {
         strip.setPixelColor(i, 0);
       }
       return;
@@ -132,7 +138,7 @@ public:
     unsigned long now = millis();
 
     if ((state == UNLOCK_UP || state == UNLOCK_DOWN) && now - lastStepTime >= unlockDelay) {
-      if (state == UNLOCK_UP && unlockedLeds < strip.getLengthTotal()) {
+      if (state == UNLOCK_UP && unlockedLeds < (int)len) {
         unlockedLeds++;
       } else if (state == UNLOCK_DOWN && unlockedLeds > 0) {
         unlockedLeds--;
@@ -141,13 +147,13 @@ public:
     }
 
     if (state == UNLOCK_UP) {
-      for (int i = unlockedLeds; i < strip.getLengthTotal(); i++) {
+      for (int i = unlockedLeds; i < (int)len; i++) {
         strip.setPixelColor(i, 0);
       }
     }
 
     if (state == UNLOCK_DOWN && shutdownRequested) {
-      for (int i = unlockedLeds; i < strip.getLengthTotal(); i++) {
+      for (int i = unlockedLeds; i < (int)len; i++) {
         strip.setPixelColor(i, 0);
       }
     }

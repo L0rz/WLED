@@ -1,5 +1,7 @@
 #pragma once
 #include "wled.h"
+#include <vector>
+#include <algorithm>
 
 class HighlightUsermod : public Usermod {
 private:
@@ -125,9 +127,7 @@ public:
     oappend(SET_F("addInfo('highlightusermod:enabled',1,'Highlight-Modus aktivieren');"));
   }
 
-  uint16_t getId() {
-    return USERMOD_ID_EXAMPLE; // oder eigene ID später
+  uint16_t getId() override {
+    return USERMOD_ID_UNSPECIFIED;
   }
 };
-
-HighlightUsermod highlightUsermod;
