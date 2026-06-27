@@ -1,0 +1,32 @@
+name: Build Analoguhr Firmware
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Cache PlatformIO
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio
+            ~/.cache/pip
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
+      - name: Install PlatformIO
+        run: pip install -U platformio
+      - name: Build (nodemcuv2)
+        run: pio run -e nodemcuv2
+      - name: Stage artifact
+        run: cp .pio/build/nodemcuv2/firmware.bin WLED_Analoguhr_nodemcuv2.bin
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: WLED_Analoguhr_nodemcuv2.bin
+          generate_release_notes: true
