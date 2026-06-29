@@ -14,12 +14,13 @@ static void _overlayAnalogClock()
   {
     _overlayAnalogCountdown(); return;
   }
-  float hourP = ((float)(hour(localTime)%12))/12.0f;
   float minuteP = ((float)minute(localTime))/60.0f;
-  hourP = hourP + minuteP/12.0f;
   float secondP = ((float)second(localTime))/60.0f;
-  unsigned hourPixel = floorf(analogClock12pixel + overlaySize*hourP);
-  if (hourPixel > overlayMax) hourPixel = overlayMin -1 + hourPixel - overlayMax;
+  // Hour hand: light the current hour's number for the whole hour (jump at the top
+  // of the hour instead of drifting with the minutes). Use the same rounding as the
+  // hour marks below so the hand lands exactly on the number, not one pixel before it.
+  unsigned hourPixel = analogClock12pixel + roundf((overlaySize / 12.0f) * (hour(localTime) % 12));
+  if (hourPixel > overlayMax) hourPixel -= overlaySize;
   unsigned minutePixel = floorf(analogClock12pixel + overlaySize*minuteP);
   if (minutePixel > overlayMax) minutePixel = overlayMin -1 + minutePixel - overlayMax;
   unsigned secondPixel = floorf(analogClock12pixel + overlaySize*secondP);
