@@ -151,7 +151,6 @@ public:
 
     double secondP = s / 60.0;
     double minuteP = (m + secondP) / 60.0;        // minute hand creeps with seconds
-    double hourP   = (h + m / 60.0) / 12.0;       // hour hand creeps with minutes
 
     // --- minute ring: tick marks (drawn first, hands overwrite them) ---
     if (minuteMarksEnabled) {
@@ -174,8 +173,11 @@ public:
       for (uint8_t hp = 0; hp < 12; ++hp)
         putPixel(hourRing.ledAtOffset((int32_t)hp * ledsPerHour), hourMarkColor);
     }
-    // Light the whole segment for the current hour (rounded with the minute fraction).
-    uint16_t hourSegStart = (uint16_t)lround(hourP * 12.0) % 12 * ledsPerHour;
+    // Light the whole segment for the current hour. Use the hour directly (no
+    // minute drift) so the segment stays on the current hour's number for the
+    // entire hour and only jumps at the top of the hour. This also aligns the
+    // segment exactly with the hour mark for that hour (drawn above).
+    uint16_t hourSegStart = (uint16_t)h * ledsPerHour;
     for (uint16_t k = 0; k < ledsPerHour; ++k)
       putPixel(hourRing.ledAtOffset((int32_t)hourSegStart + k), hourColor);
   }
