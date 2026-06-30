@@ -21,12 +21,18 @@ jobs:
           key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini') }}
       - name: Install PlatformIO
         run: pip install -U platformio
-      - name: Build (nodemcuv2)
+      - name: Build (nodemcuv2 - Dual Ring)
         run: pio run -e nodemcuv2
-      - name: Stage artifact
-        run: cp .pio/build/nodemcuv2/firmware.bin WLED_Analoguhr_nodemcuv2.bin
+      - name: Build (nodemcuv2 - Analog Clock single ring)
+        run: pio run -e nodemcuv2_analogclock
+      - name: Stage artifacts
+        run: |
+          cp .pio/build/nodemcuv2/firmware.bin WLED_Analoguhr_nodemcuv2.bin
+          cp .pio/build/nodemcuv2_analogclock/firmware.bin WLED_AnaloguhrSingle_nodemcuv2.bin
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          files: WLED_Analoguhr_nodemcuv2.bin
+          files: |
+            WLED_Analoguhr_nodemcuv2.bin
+            WLED_AnaloguhrSingle_nodemcuv2.bin
           generate_release_notes: true
