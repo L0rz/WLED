@@ -3,7 +3,12 @@ name: WLED Release CI
 on:
   push:
     tags:
+      # Marcus' Analog-Uhr-Releases (v*) NICHT hier bauen -> die erzeugt
+      # firmware.yml (nur Custom-nodemcuv2-Build mit Usermod). Sonst landet
+      # die Vanilla-Matrix (ohne Usermod) im selben Release = Footgun.
       - '*'
+      - '!v*'
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
