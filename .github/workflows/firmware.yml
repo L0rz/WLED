@@ -27,8 +27,8 @@ jobs:
         run: pio run -e nodemcuv2_analogclock
       - name: Stage artifacts
         run: |
-          cp .pio/build/nodemcuv2/firmware.bin WLED_Analoguhr_nodemcuv2.bin
-          cp .pio/build/nodemcuv2_analogclock/firmware.bin WLED_AnaloguhrSingle_nodemcuv2.bin
+          cp build_output/release/WLED_*_ESP8266.bin WLED_Analoguhr_nodemcuv2.bin
+          cp build_output/release/WLED_*_ESP8266_AnalogClock.bin WLED_AnaloguhrSingle_nodemcuv2.bin
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
